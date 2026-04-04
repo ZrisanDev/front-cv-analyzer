@@ -1,21 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ROUTES } from "@/modules/shared/lib/constants";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Página de callback para MercadoPago webhooks.
- *
- * MercadoPago envía notificaciones con parámetros:
- * ?topic=payment&id=123456
- *
- * Esta página captura esos parámetros y redirige
- * a la página de pago correspondiente.
+ * Componente interno que maneja la lógica de los parámetros de búsqueda.
+ * Debe estar envuelto en Suspense debido a useSearchParams().
  */
-export default function MercadoPagoCallback() {
+function MercadoPagoCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -46,7 +41,6 @@ export default function MercadoPagoCallback() {
     }
 
     // Redirigir a la página de pago con el ID del pago
-    // El frontend luego consultará el estado del pago vía /api/payments/status?payment_id={id}
     setTimeout(() => {
       console.log(
         "[MercadoPagoCallback] Redirigiendo a payment/success con paymentId:",
@@ -57,24 +51,7 @@ export default function MercadoPagoCallback() {
   }, [searchParams, router]);
 
   if (isProcessing) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-4">
-          <div className="text-center mb-8">
-            <Loader2 className="mx-auto size-8 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Procesando tu pago...</p>
-            <p className="text-sm text-muted-foreground">
-              Redirigiendo en un momento
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -111,5 +88,38 @@ export default function MercadoPagoCallback() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-4">
+        <div className="text-center mb-8">
+          <Loader2 className="mx-auto size-8 animate-spin text-primary" />
+          <p className="mt-4 text-muted-foreground">Procesando tu pago...</p>
+          <p className="text-sm text-muted-foreground">
+            Redirigiendo en un momento
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Página de callback para MercadoPago webhooks.
+ * Envuelve el contenido en Suspense para evitar errores durante el build.
+ */
+export default function MercadoPagoCallback() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <MercadoPagoCallbackContent />
+    </Suspense>
   );
 }
