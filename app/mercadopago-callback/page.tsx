@@ -1,0 +1,115 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ROUTES } from "@/modules/shared/lib/constants";
+import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+/**
+ * Página de callback para MercadoPago webhooks.
+ *
+ * MercadoPago envía notificaciones con parámetros:
+ * ?topic=payment&id=123456
+ *
+ * Esta página captura esos parámetros y redirige
+ * a la página de pago correspondiente.
+ */
+export default function MercadoPagoCallback() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isProcessing, setIsProcessing] = useState(true);
+
+  useEffect(() => {
+    const topic = searchParams.get("topic");
+    const paymentId = searchParams.get("id");
+
+    console.log("[MercadoPagoCallback] Webhook recibido:", {
+      topic,
+      paymentId,
+    });
+
+    // Solo procesar notificaciones de pago
+    if (topic !== "payment") {
+      console.log(
+        "[MercadoPagoCallback] Topic no es payment, ignorando:",
+        topic,
+      );
+      setIsProcessing(false);
+      return;
+    }
+
+    if (!paymentId) {
+      console.log("[MercadoPagoCallback] No payment ID, redirigiendo a home");
+      router.push("/");
+      return;
+    }
+
+    // Redirigir a la página de pago con el ID del pago
+    // El frontend luego consultará el estado del pago vía /api/payments/status?payment_id={id}
+    setTimeout(() => {
+      console.log(
+        "[MercadoPagoCallback] Redirigiendo a payment/success con paymentId:",
+        paymentId,
+      );
+      router.push(`${ROUTES.PAYMENT_SUCCESS}?payment_id=${paymentId}`);
+    }, 500);
+  }, [searchParams, router]);
+
+  if (isProcessing) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-4">
+          <div className="text-center mb-8">
+            <Loader2 className="mx-auto size-8 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Procesando tu pago...</p>
+            <p className="text-sm text-muted-foreground">
+              Redirigiendo en un momento
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md text-center space-y-4">
+        <div className="rounded-lg border bg-card p-6">
+          <div className="mb-4">
+            <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+              <svg
+                className="size-6 text-green-600 dark:text-green-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7l-4 4m0 0l6 6-6 6 6m0 0l6-6-6 6"
+                />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-center mb-2">
+              ¡Pago recibido!
+            </h2>
+          </div>
+          <p className="text-muted-foreground mb-4">
+            Hemos recibido la notificación de tu pago. Redirigiendo a la página
+            de confirmación...
+          </p>
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p>Si no eres redirigido automáticamente, haz clic en el botón:</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
