@@ -38,11 +38,8 @@ export function Header({ className }: HeaderProps) {
     <header
       className={`flex h-14 shrink-0 items-center justify-end border-b bg-card px-4 md:justify-between ${className ?? ""}`}
     >
-      {/* Spacer for mobile hamburger */}
-      <div className="w-8 md:hidden" />
-
-      {/* Desktop title + credit badge area */}
-      <div className="hidden md:flex md:items-center md:gap-3">
+      {/* Credit badge — always visible (full badge on desktop, compact on mobile) */}
+      <div className="flex items-center">
         {isAuthenticated && credits && (
           <CreditBadge
             freeRemaining={credits.free_analyses_remaining}

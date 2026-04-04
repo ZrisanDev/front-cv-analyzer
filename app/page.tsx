@@ -1,28 +1,46 @@
-"use client"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
+import { TOKEN_KEY, ROUTES } from "@/modules/shared/lib/constants"
+import { LandingPage } from "@/modules/landing"
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
-import { useAuth } from "@/modules/auth/hooks/useAuth"
-import { ROUTES } from "@/modules/shared/lib/constants"
+export const metadata = {
+  title: "CV Analyzer — Analizá tu CV con Inteligencia Artificial",
+  description:
+    "Subí tu currículum y recibí un análisis completo en segundos. Identificá fortalezas, áreas de mejora y optimizá tu perfil profesional. 3 análisis gratuitos al registrarte.",
+  keywords: [
+    "análisis de CV",
+    "analizador de currículum",
+    "CV analyzer",
+    "inteligencia artificial",
+    "optimización de CV",
+    "revisión de currículum",
+    "análisis profesional",
+    "mejorar CV",
+  ],
+  openGraph: {
+    title: "CV Analyzer — Analizá tu CV con Inteligencia Artificial",
+    description:
+      "Subí tu currículum y recibí un análisis completo en segundos. 3 análisis gratuitos al registrarte.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "CV Analyzer",
+  },
+}
 
-export default function Home() {
-  const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+/**
+ * Homepage — Server Component.
+ *
+ * Auth check via cookies (same pattern as app/(main)/layout.tsx):
+ * - Authenticated → redirect to /analyze (the app)
+ * - Not authenticated → render the LandingPage (SEO-friendly, no FOUC)
+ */
+export default async function Home() {
+  const cookieStore = await cookies()
+  const token = cookieStore.get(TOKEN_KEY)?.value
 
-  useEffect(() => {
-    if (isLoading) return
+  if (token) {
+    redirect(ROUTES.ANALYZE)
+  }
 
-    if (isAuthenticated) {
-      router.replace(ROUTES.ANALYZE)
-    } else {
-      router.replace(ROUTES.LOGIN)
-    }
-  }, [isAuthenticated, isLoading, router])
-
-  return (
-    <div className="flex flex-1 items-center justify-center">
-      <Loader2 className="size-8 animate-spin text-muted-foreground" />
-    </div>
-  )
+  return <LandingPage />
 }

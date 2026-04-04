@@ -10,20 +10,38 @@ export async function getCredits(): Promise<UserCredits> {
 }
 
 export async function getPackages(): Promise<CreditPackage[]> {
-  const { data } = await api.get<ApiResponse<CreditPackage[]>>(
+  const response = await api.get<CreditPackage[] | ApiResponse<CreditPackage[]>>(
     "/api/payments/credit-packages"
   )
-  return data.data
+
+  // El backend retorna el array directamente, no el wrapper ApiResponse
+  const data = response.data
+
+  if (Array.isArray(data)) {
+    return data
+  } else if (data && 'data' in data && Array.isArray(data.data)) {
+    return data.data
+  } else {
+    throw new Error("Invalid response format from API")
+  }
 }
 
 export async function createPackagePreference(
   packageType: PackageType
 ): Promise<PaymentPreference> {
-  const { data } = await api.post<ApiResponse<PaymentPreference>>(
+  // El backend retorna PaymentPreference directo, no wrapper ApiResponse<PaymentPreference>
+  const response = await api.post<PaymentPreference | ApiResponse<PaymentPreference>>(
     "/api/payments/create-package-preference",
     { package_type: packageType }
-  )
-  return data.data
+  ) as unknown
+
+  // Verificamos si es ApiResponse wrapper o objeto directo
+  if (response && typeof response === 'object' && 'data' in (response as any)) {
+    return (response as ApiResponse<PaymentPreference>).data
+  } else {
+    // Es el objeto directo del backend
+    return response as PaymentPreference
+  }
 }
 
 export async function getPaymentDetails(

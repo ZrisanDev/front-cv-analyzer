@@ -21,6 +21,8 @@ export { getCredits, getPackages, createPackagePreference, getPaymentDetails } f
 // Hooks
 export { usePaymentStatus } from "./hooks/usePayment"
 export { useCreditsBalance, useCreditPackages, CREDIT_KEYS } from "./hooks/useCredits"
+export { useCreditFlow } from "./hooks/useCreditFlow"
+export type { UseCreditFlowReturn } from "./hooks/useCreditFlow"
 
 // Components
 export { PaymentSuccess } from "./components/PaymentSuccess"
@@ -28,3 +30,4 @@ export { PaymentError } from "./components/PaymentError"
 export { PaymentPending } from "./components/PaymentPending"
 export { CreditBadge } from "./components/CreditBadge"
 export { PricingCard } from "./components/PricingCard"
+export { CreditUpsellModal } from "./components/CreditUpsellModal"

@@ -16,11 +16,22 @@ export function PricingPageContent() {
   const [purchasing, setPurchasing] = useState<PackageType | null>(null)
 
   const handleSelect = async (packageType: PackageType) => {
+    console.log("[PricingPageContent] Button clicked, packageType:", packageType)
     setPurchasing(packageType)
     try {
+      console.log("[PricingPageContent] Calling createPackagePreference...")
       const preference = await createPackagePreference(packageType)
+      console.log("[PricingPageContent] Preference received, redirecting to:", preference.payment_url)
+
+      console.log("[PricingPageContent] Current window.location.href:", window.location.href)
+      console.log("[PricingPageContent] About to redirect to:", preference.payment_url)
+
       window.location.href = preference.payment_url
-    } catch {
+
+      console.log("[PricingPageContent] After setting window.location.href:", window.location.href)
+
+    } catch (error) {
+      console.error("[PricingPageContent] Error in handleSelect:", error)
       setPurchasing(null)
     }
   }

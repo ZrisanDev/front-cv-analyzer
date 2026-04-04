@@ -27,6 +27,8 @@ export function useCreditPackages() {
   return useQuery({
     queryKey: CREDIT_KEYS.packages(),
     queryFn: getPackagesApi,
+    retry: 2,
+    placeholderData: [],
   })
 }
 

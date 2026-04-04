@@ -26,7 +26,7 @@ export function CreditBadge({ freeRemaining, paidCredits }: CreditBadgeProps) {
     <Badge variant="secondary" className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs">
       <Coins className="size-3.5 text-primary" />
       <span className="font-medium">{total} {label}</span>
-      <span className="text-muted-foreground">
+      <span className="hidden text-muted-foreground sm:inline">
         ({freeRemaining} gratis + {paidCredits} pagos)
       </span>
     </Badge>
