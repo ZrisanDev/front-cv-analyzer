@@ -14,6 +14,8 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`
     }
   }
+  // Skip ngrok browser warning
+  config.headers["ngrok-skip-browser-warning"] = "any"
   return config
 })
 
