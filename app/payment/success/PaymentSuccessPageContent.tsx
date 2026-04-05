@@ -17,7 +17,7 @@ function CreditPurchaseSuccess() {
   const queryClient = useQueryClient()
 
   useEffect(() => {
-    // Invalidate credits cache to refresh display after purchase
+    // Invalidar créditos después de purchase
     queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
   }, [queryClient])
 
@@ -89,14 +89,10 @@ function PaymentSuccessContent() {
 
         if (result.success) {
           console.log("[PaymentSuccess] Payment synced successfully ✅")
-          setSyncSuccess(true)
-          setSyncError(false)
-          // Invalidar créditos después de sync exitoso
+          // Invalidar créditos después de sync
           queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
         } else {
           console.error("[PaymentSuccess] Sync failed:", result.message)
-          setSyncError(true)
-          setSyncSuccess(false)
         }
       } catch (error) {
         console.error("[PaymentSuccess] Error syncing payment:", error)
@@ -106,24 +102,27 @@ function PaymentSuccessContent() {
     if (paymentId && preferenceId) {
       syncPaymentData()
     }
-  }, [paymentId, preferenceId, statusMp, externalReference, collectionId])
-
-  if (isCreditPurchase) {
-    return <CreditPurchaseSuccess />
-  }
+  }, [paymentId, preferenceId, statusMp, externalReference, collectionId, queryClient])
 
   // ==========================================
   // INVALIDAR CRÉDITOS INDEPENDIENTEMENTE (sin depender del status check)
   // ==========================================
-  // Ya no necesario, la invalidación se hace en el useEffect principal después del sync exitoso
+  useEffect(() => {
+    if (statusMp === "approved" && preferenceId) {
+      console.log("[PaymentSuccess] Status approved - invalidando créditos...")
+      queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
+    }
+  }, [statusMp, preferenceId, queryClient])
 
   // Estado del sync
   const [syncError, setSyncError] = useState(false)
   const [syncSuccess, setSyncSuccess] = useState(false)
 
-  const { data: payment, isLoading, error } = usePaymentStatus(paymentId)
+  if (isCreditPurchase) {
+    return <CreditPurchaseSuccess />
+  }
 
-  if (!paymentId) {
+  if (!preferenceId) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="text-center">
@@ -133,6 +132,8 @@ function PaymentSuccessContent() {
     )
   }
 
+  const { data: payment, isLoading, error } = usePaymentStatus(preferenceId)
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center p-4">
@@ -140,8 +141,6 @@ function PaymentSuccessContent() {
           <Skeleton className="mx-auto h-12 w-12 rounded-full" />
           <Skeleton className="mx-auto h-6 w-48" />
           <Skeleton className="mx-auto h-4 w-64" />
-          <Skeleton className="h-20 w-full rounded-lg" />
-          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
       </div>
     )
