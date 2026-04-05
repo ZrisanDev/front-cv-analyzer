@@ -1,9 +1,8 @@
 "use client"
 
+import { useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
-import { useEffect } from "react"
 import { CheckCircle, ArrowRight } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -52,9 +51,54 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const paymentId = searchParams.get("payment_id")
   const preferenceId = searchParams.get("preference_id")
+  const statusMp = searchParams.get("status")
+  const externalReference = searchParams.get("external_reference")
+  const collectionId = searchParams.get("collection_id")
 
   // Credit purchase flow: preference_id present but no payment_id
   const isCreditPurchase = !!preferenceId && !paymentId
+
+  // ==========================================
+  // SYNC CON BACKEND (datos de Mercado Pago)
+  // ==========================================
+  useEffect(() => {
+    const syncPaymentData = async () => {
+      console.log("[PaymentSuccess] Syncing payment data from URL...")
+
+      // Enviar todos los datos de Mercado Pago al backend
+      try {
+        const params = new URLSearchParams()
+        if (paymentId) params.append("payment_id", paymentId)
+        if (preferenceId) params.append("preference_id", preferenceId)
+        if (statusMp) params.append("status", statusMp)
+        if (externalReference) params.append("external_reference", externalReference)
+        if (collectionId) params.append("collection_id", collectionId)
+
+        const response = await fetch("/api/payments/sync-mercadopago-redirect", {
+          method: "POST",
+          body: params.toString(),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        })
+
+        const result = await response.json()
+        console.log("[PaymentSuccess] Sync response:", result)
+
+        if (result.success) {
+          console.log("[PaymentSuccess] Payment synced successfully ✅")
+        } else {
+          console.error("[PaymentSuccess] Sync failed:", result.message)
+        }
+      } catch (error) {
+        console.error("[PaymentSuccess] Error syncing payment:", error)
+      }
+    }
+
+    if (paymentId && preferenceId) {
+      syncPaymentData()
+    }
+  }, [paymentId, preferenceId, statusMp, externalReference, collectionId])
 
   if (isCreditPurchase) {
     return <CreditPurchaseSuccess />
