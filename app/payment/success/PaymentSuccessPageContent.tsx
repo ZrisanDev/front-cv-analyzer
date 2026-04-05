@@ -49,6 +49,7 @@ function CreditPurchaseSuccess() {
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
+  const queryClient = useQueryClient()
   const paymentId = searchParams.get("payment_id")
   const preferenceId = searchParams.get("preference_id")
   const statusMp = searchParams.get("status")
