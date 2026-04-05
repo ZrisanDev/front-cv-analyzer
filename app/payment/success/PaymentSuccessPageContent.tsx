@@ -64,19 +64,20 @@ function PaymentSuccessContent() {
   useEffect(() => {
     const syncPaymentData = async () => {
       console.log("[PaymentSuccess] Syncing payment data from URL...")
+      console.log("[PaymentSuccess] Params:", { paymentId, preferenceId, statusMp, externalReference, collectionId })
 
-      // Enviar todos los datos de Mercado Pago al backend
       try {
-        const params = new URLSearchParams()
-        if (paymentId) params.append("payment_id", paymentId)
-        if (preferenceId) params.append("preference_id", preferenceId)
-        if (statusMp) params.append("status", statusMp)
-        if (externalReference) params.append("external_reference", externalReference)
-        if (collectionId) params.append("collection_id", collectionId)
+        // Enviar como BODY (form data) como solicitaste
+        const body = new URLSearchParams()
+        if (paymentId) body.set("payment_id", paymentId)
+        if (preferenceId) body.set("preference_id", preferenceId)
+        if (statusMp) body.set("status", statusMp)
+        if (externalReference) body.set("external_reference", externalReference)
+        if (collectionId) body.set("collection_id", collectionId)
 
         const response = await fetch("/api/payments/sync-mercadopago-redirect", {
           method: "POST",
-          body: params.toString(),
+          body: body,
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
@@ -87,6 +88,8 @@ function PaymentSuccessContent() {
 
         if (result.success) {
           console.log("[PaymentSuccess] Payment synced successfully ✅")
+          // Invalidar créditos después de sync
+          queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
         } else {
           console.error("[PaymentSuccess] Sync failed:", result.message)
         }
