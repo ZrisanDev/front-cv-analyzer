@@ -13,6 +13,8 @@ interface PricingCardWithWalletProps {
   onSelect: (packageType: PackageType) => void
   /** ID de la preferencia de pago (si ya está creada) */
   preferenceId?: string | null
+  /** URL de pago de Mercado Pago (fallback) */
+  paymentUrl?: string | null
   /** Si está creando la preferencia de pago */
   isCreatingPreference?: boolean
 }
@@ -22,10 +24,12 @@ export function PricingCardWithWallet({
   isPopular = false,
   onSelect,
   preferenceId,
+  paymentUrl,
   isCreatingPreference = false,
 }: PricingCardWithWalletProps) {
   const pricePerCredit = (pkg.price_usd / pkg.credits_count).toFixed(2)
   const hasPreference = !!preferenceId
+  const hasPaymentUrl = !!paymentUrl
 
   return (
     <Card
@@ -96,10 +100,27 @@ export function PricingCardWithWallet({
           )}
 
           {hasPreference && (
-            <MercadoPagoWallet
-              preferenceId={preferenceId}
-              width="100%"
-            />
+            <>
+              <MercadoPagoWallet
+                preferenceId={preferenceId}
+                width="100%"
+              />
+              {/* Botón de fallback si el Wallet Brick no funciona */}
+              <a
+                href={paymentUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-center text-sm text-muted-foreground hover:text-primary underline mt-2"
+                onClick={(e) => {
+                  if (!paymentUrl) {
+                    e.preventDefault()
+                    console.warn("[PricingCardWithWallet] No payment URL available")
+                  }
+                }}
+              >
+                ¿No ves el botón? Pagar directamente
+              </a>
+            </>
           )}
         </div>
       </CardContent>

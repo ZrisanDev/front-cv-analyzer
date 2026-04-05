@@ -19,6 +19,11 @@ export function PricingPageWithWallet() {
     pack_50: null,
     pack_100: null,
   })
+  const [paymentUrls, setPaymentUrls] = useState<Record<PackageType, string | null>>({
+    pack_20: null,
+    pack_50: null,
+    pack_100: null,
+  })
 
   // Inicializar el SDK de Mercado Pago con la public key
   useMercadoPagoSDK(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY)
@@ -33,11 +38,21 @@ export function PricingPageWithWallet() {
         "[PricingPageWithWallet] Preference received:",
         preference.preference_id
       )
+      console.log(
+        "[PricingPageWithWallet] Payment URL received:",
+        preference.payment_url
+      )
 
       // Guardar el preferenceId para mostrar el Wallet Button
       setPreferences((prev) => ({
         ...prev,
         [packageType]: preference.preference_id,
+      }))
+
+      // Guardar el payment_url como fallback
+      setPaymentUrls((prev) => ({
+        ...prev,
+        [packageType]: preference.payment_url,
       }))
     } catch (error) {
       console.error("[PricingPageWithWallet] Error in handleSelect:", error)
@@ -102,6 +117,7 @@ export function PricingPageWithWallet() {
                 isPopular={pkg.package_type === "pack_50"}
                 onSelect={handleSelect}
                 preferenceId={preferences[pkg.package_type]}
+                paymentUrl={paymentUrls[pkg.package_type]}
                 isCreatingPreference={creatingPreference === pkg.package_type}
               />
             ))}

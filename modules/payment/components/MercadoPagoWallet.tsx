@@ -33,8 +33,11 @@ export function MercadoPagoWallet({
   className = "",
   width = "100%",
 }: MercadoPagoWalletProps) {
+  console.log("[MercadoPagoWallet] Rendering with preferenceId:", preferenceId)
+
   // Mostrar skeleton mientras carga la preferencia
   if (isLoading || !preferenceId) {
+    console.log("[MercadoPagoWallet] Showing skeleton, isLoading:", isLoading, "preferenceId:", !!preferenceId)
     return (
       <div className={className} style={{ width }}>
         <Skeleton className="h-11 w-full rounded-lg" />
@@ -43,7 +46,7 @@ export function MercadoPagoWallet({
   }
 
   return (
-    <div className={className} style={{ width }}>
+    <div className={className} style={{ width }} data-testid="mercadopago-wallet-container">
       <Wallet
         initialization={{
           preferenceId,
