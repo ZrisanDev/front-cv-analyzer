@@ -24,6 +24,8 @@ export function usePaymentStatus(
     queryKey: PAYMENT_KEYS.status(paymentId ?? ""),
     queryFn: () => getPaymentStatusApi(paymentId!),
     enabled: !!paymentId,
+    // Agregar staleTime para dar tiempo al sync endpoint (evita race condition)
+    staleTime: 2000,  // 2 segundos de "fresh" antes de consultar
     refetchInterval: (query) => {
       if (!pollPending) return false
       const status = query.state.data?.status as PaymentStatus | undefined

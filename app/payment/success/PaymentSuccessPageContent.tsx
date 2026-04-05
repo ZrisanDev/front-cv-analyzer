@@ -108,6 +108,16 @@ function PaymentSuccessContent() {
     return <CreditPurchaseSuccess />
   }
 
+  // ==========================================
+  // INVALIDAR CRÉDITOS INDEPENDIENTEMENTE (sin depender del status check)
+  // ==========================================
+  useEffect(() => {
+    if (statusMp === "approved" && preferenceId) {
+      console.log("[PaymentSuccess] Status approved - invalidando créditos...")
+      queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
+    }
+  }, [statusMp, preferenceId, queryClient])
+
   const { data: payment, isLoading, error } = usePaymentStatus(paymentId)
 
   if (!paymentId) {
