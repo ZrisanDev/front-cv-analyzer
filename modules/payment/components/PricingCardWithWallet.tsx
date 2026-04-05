@@ -1,22 +1,31 @@
-"use client"
+"use client";
 
-import { Check } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { MercadoPagoWallet } from "./MercadoPagoWallet"
-import type { CreditPackage, PackageType } from "@/modules/payment/types/payment"
+import { Check } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { MercadoPagoWallet } from "./MercadoPagoWallet";
+import type {
+  CreditPackage,
+  PackageType,
+} from "@/modules/payment/types/payment";
 
 interface PricingCardWithWalletProps {
-  pkg: CreditPackage
-  isPopular?: boolean
-  onSelect: (packageType: PackageType) => void
+  pkg: CreditPackage;
+  isPopular?: boolean;
+  onSelect: (packageType: PackageType) => void;
   /** ID de la preferencia de pago (si ya está creada) */
-  preferenceId?: string | null
+  preferenceId?: string | null;
   /** URL de pago de Mercado Pago (fallback) */
-  paymentUrl?: string | null
+  paymentUrl?: string | null;
   /** Si está creando la preferencia de pago */
-  isCreatingPreference?: boolean
+  isCreatingPreference?: boolean;
 }
 
 export function PricingCardWithWallet({
@@ -27,9 +36,8 @@ export function PricingCardWithWallet({
   paymentUrl,
   isCreatingPreference = false,
 }: PricingCardWithWalletProps) {
-  const pricePerCredit = (pkg.price_usd / pkg.credits_count).toFixed(2)
-  const hasPreference = !!preferenceId
-  const hasPaymentUrl = !!paymentUrl
+  const pricePerCredit = (pkg.price_usd / pkg.credits_count).toFixed(2);
+  const hasPreference = !!preferenceId;
 
   return (
     <Card
@@ -46,9 +54,7 @@ export function PricingCardWithWallet({
       )}
 
       <CardHeader className="text-center pb-2">
-        <CardTitle className="text-2xl">
-          Pack {pkg.credits_count}
-        </CardTitle>
+        <CardTitle className="text-2xl">Pack {pkg.credits_count}</CardTitle>
         <CardDescription className="text-sm">
           Créditos de análisis
         </CardDescription>
@@ -58,7 +64,9 @@ export function PricingCardWithWallet({
         <div className="text-center">
           <p className="text-4xl font-bold">
             ${pkg.price_usd.toFixed(2)}
-            <span className="text-base font-normal text-muted-foreground ml-1">USD</span>
+            <span className="text-base font-normal text-muted-foreground ml-1">
+              USD
+            </span>
           </p>
           <p className="text-sm text-muted-foreground mt-1">
             ${pricePerCredit} por análisis
@@ -101,10 +109,7 @@ export function PricingCardWithWallet({
 
           {hasPreference && (
             <>
-              <MercadoPagoWallet
-                preferenceId={preferenceId}
-                width="100%"
-              />
+              <MercadoPagoWallet preferenceId={preferenceId} width="100%" />
               {/* Botón de fallback si el Wallet Brick no funciona */}
               <a
                 href={paymentUrl || "#"}
@@ -113,8 +118,10 @@ export function PricingCardWithWallet({
                 className="block text-center text-sm text-muted-foreground hover:text-primary underline mt-2"
                 onClick={(e) => {
                   if (!paymentUrl) {
-                    e.preventDefault()
-                    console.warn("[PricingCardWithWallet] No payment URL available")
+                    e.preventDefault();
+                    console.warn(
+                      "[PricingCardWithWallet] No payment URL available",
+                    );
                   }
                 }}
               >
@@ -125,5 +132,5 @@ export function PricingCardWithWallet({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

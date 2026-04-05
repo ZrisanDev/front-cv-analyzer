@@ -1,65 +1,76 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ShieldCheck, CreditCard, ArrowRight } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Button } from "@/components/ui/button"
-import { useCreditPackages } from "@/modules/payment/hooks/useCredits"
-import { createPackagePreference, PricingCardWithWallet } from "@/modules/payment"
-import { useMercadoPagoSDK } from "@/modules/payment"
-import { ROUTES } from "@/modules/shared/lib/constants"
-import Link from "next/link"
-import type { PackageType } from "@/modules/payment/types/payment"
+import { useState } from "react";
+import { ShieldCheck, CreditCard, ArrowRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { useCreditPackages } from "@/modules/payment/hooks/useCredits";
+import {
+  createPackagePreference,
+  PricingCardWithWallet,
+} from "@/modules/payment";
+import { useMercadoPagoSDK } from "@/modules/payment";
+import { ROUTES } from "@/modules/shared/lib/constants";
+import Link from "next/link";
+import type { PackageType } from "@/modules/payment/types/payment";
 
 export function PricingPageWithWallet() {
-  const { data: packages, isLoading, isError } = useCreditPackages()
-  const [creatingPreference, setCreatingPreference] = useState<PackageType | null>(null)
-  const [preferences, setPreferences] = useState<Record<PackageType, string | null>>({
+  const { data: packages, isLoading, isError } = useCreditPackages();
+  const [creatingPreference, setCreatingPreference] =
+    useState<PackageType | null>(null);
+  const [preferences, setPreferences] = useState<
+    Record<PackageType, string | null>
+  >({
     pack_20: null,
     pack_50: null,
     pack_100: null,
-  })
-  const [paymentUrls, setPaymentUrls] = useState<Record<PackageType, string | null>>({
+  });
+  const [paymentUrls, setPaymentUrls] = useState<
+    Record<PackageType, string | null>
+  >({
     pack_20: null,
     pack_50: null,
     pack_100: null,
-  })
+  });
 
   // Inicializar el SDK de Mercado Pago con la public key
-  useMercadoPagoSDK(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY)
+  useMercadoPagoSDK(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY);
 
   const handleSelect = async (packageType: PackageType) => {
-    console.log("[PricingPageWithWallet] Button clicked, packageType:", packageType)
-    setCreatingPreference(packageType)
+    console.log(
+      "[PricingPageWithWallet] Button clicked, packageType:",
+      packageType,
+    );
+    setCreatingPreference(packageType);
     try {
-      console.log("[PricingPageWithWallet] Calling createPackagePreference...")
-      const preference = await createPackagePreference(packageType)
+      console.log("[PricingPageWithWallet] Calling createPackagePreference...");
+      const preference = await createPackagePreference(packageType);
       console.log(
         "[PricingPageWithWallet] Preference received:",
-        preference.preference_id
-      )
+        preference.preference_id,
+      );
       console.log(
         "[PricingPageWithWallet] Payment URL received:",
-        preference.payment_url
-      )
+        preference.payment_url,
+      );
 
       // Guardar el preferenceId para mostrar el Wallet Button
       setPreferences((prev) => ({
         ...prev,
         [packageType]: preference.preference_id,
-      }))
+      }));
 
       // Guardar el payment_url como fallback
       setPaymentUrls((prev) => ({
         ...prev,
         [packageType]: preference.payment_url,
-      }))
+      }));
     } catch (error) {
-      console.error("[PricingPageWithWallet] Error in handleSelect:", error)
+      console.error("[PricingPageWithWallet] Error in handleSelect:", error);
     } finally {
-      setCreatingPreference(null)
+      setCreatingPreference(null);
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -71,12 +82,12 @@ export function PricingPageWithWallet() {
           </div>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-[420px] rounded-xl" />
+              <Skeleton key={i} className="h-105 rounded-xl" />
             ))}
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (isError || !packages) {
@@ -92,7 +103,7 @@ export function PricingPageWithWallet() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -148,5 +159,5 @@ export function PricingPageWithWallet() {
         </div>
       </div>
     </div>
-  )
+  );
 }
