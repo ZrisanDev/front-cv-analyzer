@@ -1,213 +1,244 @@
-"use client"
+"use client";
 
-import { useEffect, useState, Suspense } from "react"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { CheckCircle, ArrowRight } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/modules/shared/lib/constants"
-import { PaymentSuccess } from "@/modules/payment/components/PaymentSuccess"
-import { usePaymentStatus } from "@/modules/payment/hooks/usePayment"
-import { useQueryClient } from "@tanstack/react-query"
-import { CREDIT_KEYS } from "@/modules/payment/hooks/useCredits"
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 
-function CreditPurchaseSuccess() {
-  const queryClient = useQueryClient()
+interface PaymentData {
+  status: string;
+  paymentId: string | null;
+  collectionId: string | null;
+  externalReference: string | null;
+  paymentType: string | null;
+  merchantOrderId: string | null;
+}
 
-  useEffect(() => {
-    // Invalidar créditos después de purchase
-    queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
-  }, [queryClient])
-
-  return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-            <CheckCircle className="size-6 text-green-600 dark:text-green-400" />
-          </div>
-          <CardTitle className="text-xl">¡Compra exitosa!</CardTitle>
-          <CardDescription>
-            Tus créditos han sido acreditados a tu cuenta y están listos para usar.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="flex flex-col gap-4">
-          <Button asChild className="w-full" size="lg">
-            <Link href={ROUTES.DASHBOARD}>
-              Ir al dashboard
-              <ArrowRight className="ml-1.5 size-4" />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  )
+function extractPaymentData(searchParams: URLSearchParams): PaymentData {
+  return {
+    status: searchParams.get("status") || "unknown",
+    paymentId: searchParams.get("payment_id"),
+    collectionId: searchParams.get("collection_id"),
+    externalReference: searchParams.get("external_reference"),
+    paymentType: searchParams.get("payment_type"),
+    merchantOrderId: searchParams.get("merchant_order_id"),
+  };
 }
 
 function PaymentSuccessContent() {
-  const searchParams = useSearchParams()
-  const queryClient = useQueryClient()
-  const paymentId = searchParams.get("payment_id")
-  const preferenceId = searchParams.get("preference_id")
-  const statusMp = searchParams.get("status")
-  const externalReference = searchParams.get("external_reference")
-  const collectionId = searchParams.get("collection_id")
+  const searchParams = useSearchParams();
+  const paymentData = extractPaymentData(searchParams);
 
-  // Credit purchase flow: preference_id present but no payment_id
-  const isCreditPurchase = !!preferenceId && !paymentId
+  // Determinar el estado del pago
+  const isApproved = paymentData.status === "approved";
+  const isPending = paymentData.status === "pending";
+  const isFailed =
+    paymentData.status === "rejected" ||
+    paymentData.status === "cancelled";
 
-  // ==========================================
-  // SYNC CON BACKEND (datos de Mercado Pago)
-  // ==========================================
-  useEffect(() => {
-    const syncPaymentData = async () => {
-      console.log("[PaymentSuccess] Syncing payment data from URL...")
-      console.log("[PaymentSuccess] Params:", { paymentId, preferenceId, statusMp, externalReference, collectionId })
+  // Mapear tipos de pago a texto amigable
+  const paymentTypeMap: Record<string, string> = {
+    account_money: "Dinero en cuenta",
+    credit_card: "Tarjeta de crédito",
+    debit_card: "Tarjeta de débito",
+    ticket: "Pago en efectivo",
+    atm: "Cajero automático",
+    wallet_purchase: "Billetera Mercado Pago",
+  };
 
-      try {
-        // Enviar como BODY (form data) como solicitaste
-        const body = new URLSearchParams()
-        if (paymentId) body.set("payment_id", paymentId)
-        if (preferenceId) body.set("preference_id", preferenceId)
-        if (statusMp) body.set("status", statusMp)
-        if (externalReference) body.set("external_reference", externalReference)
-        if (collectionId) body.set("collection_id", collectionId)
+  const paymentTypeText =
+    paymentTypeMap[paymentData.paymentType || ""] ||
+    paymentData.paymentType;
 
-        const response = await fetch("/api/payments/sync-mercadopago-redirect", {
-          method: "POST",
-          body: body,
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-        })
-
-        const result = await response.json()
-        console.log("[PaymentSuccess] Sync response:", result)
-
-        if (result.success) {
-          console.log("[PaymentSuccess] Payment synced successfully ✅")
-          // Invalidar créditos después de sync
-          queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
-        } else {
-          console.error("[PaymentSuccess] Sync failed:", result.message)
-        }
-      } catch (error) {
-        console.error("[PaymentSuccess] Error syncing payment:", error)
-      }
-    }
-
-    if (paymentId && preferenceId) {
-      syncPaymentData()
-    }
-  }, [paymentId, preferenceId, statusMp, externalReference, collectionId, queryClient])
-
-  // ==========================================
-  // INVALIDAR CRÉDITOS INDEPENDIENTEMENTE (sin depender del status check)
-  // ==========================================
-  useEffect(() => {
-    if (statusMp === "approved" && preferenceId) {
-      console.log("[PaymentSuccess] Status approved - invalidando créditos...")
-      queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
-    }
-  }, [statusMp, preferenceId, queryClient])
-
-  // Estado del sync
-  const [syncError, setSyncError] = useState(false)
-  const [syncSuccess, setSyncSuccess] = useState(false)
-
-  if (isCreditPurchase) {
-    return <CreditPurchaseSuccess />
-  }
-
-  if (!preferenceId) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-muted-foreground">No payment ID provided.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const { data: payment, isLoading, error } = usePaymentStatus(preferenceId)
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-4">
-          <Skeleton className="mx-auto h-12 w-12 rounded-full" />
-          <Skeleton className="mx-auto h-6 w-48" />
-          <Skeleton className="mx-auto h-4 w-64" />
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !payment) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-muted-foreground">
-            Unable to verify payment status. Please try again later.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // Si el sync fue exitoso, mostrar el mensaje de éxito
-  // Si el status del payment es approved, mostrar el componente de éxito
-  const shouldShowSuccess = payment && payment.status === "approved" && syncSuccess
-
-  if (shouldShowSuccess) {
-    return <PaymentSuccess payment={payment} />
-  }
-
-  // Si hay un error de sync, mostrarlo
-  if (syncError) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="text-center">
-          <p className="text-red-600">
-            Hubo un error al sincronizar el pago. Por favor intenta nuevamente.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
-  // Mientras carga o procesa
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex size-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-          <div className="size-6 border-4 border-blue-200 dark:border-blue-700 rounded-full border-t-transparent animate-spin" />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        {/* Ícono y mensaje principal */}
+        <div className="text-center mb-6">
+          {isApproved && (
+            <>
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                ¡Pago completado!
+              </h1>
+              <p className="text-gray-600">
+                Tu pago ha sido procesado exitosamente.
+              </p>
+            </>
+          )}
+
+          {isPending && (
+            <>
+              <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Pago pendiente
+              </h1>
+              <p className="text-gray-600">
+                Tu pago está siendo procesado.
+              </p>
+            </>
+          )}
+
+          {isFailed && (
+            <>
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                Pago rechazado
+              </h1>
+              <p className="text-gray-600">
+                Hubo un problema con tu pago.
+              </p>
+            </>
+          )}
         </div>
-        <p className="text-muted-foreground mt-4">
-          Procesando tu pago...
-        </p>
+
+        {/* Detalles del pago */}
+        <div className="space-y-4 mb-6">
+          {/* ID de la transacción */}
+          {(paymentData.paymentId || paymentData.collectionId) && (
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm text-gray-600">
+                ID de transacción
+              </span>
+              <span className="text-sm font-medium text-gray-900 font-mono">
+                {paymentData.paymentId || paymentData.collectionId || "-"}
+              </span>
+            </div>
+          )}
+
+          {/* Tipo de pago */}
+          {paymentData.paymentType && (
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm text-gray-600">Método de pago</span>
+              <span className="text-sm font-medium text-gray-900">
+                {paymentTypeText}
+              </span>
+            </div>
+          )}
+
+          {/* Referencia del pedido */}
+          {paymentData.externalReference && (
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm text-gray-600">
+                Referencia del pedido
+              </span>
+              <span className="text-sm font-medium text-gray-900 font-mono">
+                {paymentData.externalReference}
+              </span>
+            </div>
+          )}
+
+          {/* Orden de comerciante */}
+          {paymentData.merchantOrderId && (
+            <div className="flex justify-between items-center py-3 border-b border-gray-100">
+              <span className="text-sm text-gray-600">ID de orden</span>
+              <span className="text-sm font-medium text-gray-900 font-mono">
+                {paymentData.merchantOrderId}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* AVISO IMPORTANTE - Estos datos NO son confiables */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-blue-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                Te enviaremos un correo de confirmación cuando el pago se
+                complete. Si tienes dudas, contáctanos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="space-y-3">
+          <button
+            onClick={() => (window.location.href = "/")}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Volver al inicio
+          </button>
+
+          <button
+            onClick={() => (window.location.href = "/dashboard")}
+            className="w-full bg-white text-gray-700 py-3 px-4 rounded-lg font-medium border border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            Ir al dashboard
+          </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function PaymentSuccessPageContent() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
           <div className="w-full max-w-md space-y-4">
-            <Skeleton className="mx-auto h-12 w-12 rounded-full" />
-            <Skeleton className="mx-auto h-6 w-48" />
-            <Skeleton className="mx-auto h-4 w-64" />
+            <div className="mx-auto h-12 w-12 rounded-full bg-gray-200 animate-pulse" />
+            <div className="mx-auto h-6 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="mx-auto h-4 w-64 bg-gray-200 rounded animate-pulse" />
           </div>
         </div>
       }
     >
       <PaymentSuccessContent />
     </Suspense>
-  )
+  );
 }
