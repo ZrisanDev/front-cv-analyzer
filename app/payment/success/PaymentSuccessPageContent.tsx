@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, Suspense } from "react"
+import { useEffect, useState, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { CheckCircle, ArrowRight } from "lucide-react"
@@ -89,10 +89,14 @@ function PaymentSuccessContent() {
 
         if (result.success) {
           console.log("[PaymentSuccess] Payment synced successfully ✅")
-          // Invalidar créditos después de sync
+          setSyncSuccess(true)
+          setSyncError(false)
+          // Invalidar créditos después de sync exitoso
           queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
         } else {
           console.error("[PaymentSuccess] Sync failed:", result.message)
+          setSyncError(true)
+          setSyncSuccess(false)
         }
       } catch (error) {
         console.error("[PaymentSuccess] Error syncing payment:", error)
@@ -111,12 +115,11 @@ function PaymentSuccessContent() {
   // ==========================================
   // INVALIDAR CRÉDITOS INDEPENDIENTEMENTE (sin depender del status check)
   // ==========================================
-  useEffect(() => {
-    if (statusMp === "approved" && preferenceId) {
-      console.log("[PaymentSuccess] Status approved - invalidando créditos...")
-      queryClient.invalidateQueries({ queryKey: CREDIT_KEYS.balance() })
-    }
-  }, [statusMp, preferenceId, queryClient])
+  // Ya no necesario, la invalidación se hace en el useEffect principal después del sync exitoso
+
+  // Estado del sync
+  const [syncError, setSyncError] = useState(false)
+  const [syncSuccess, setSyncSuccess] = useState(false)
 
   const { data: payment, isLoading, error } = usePaymentStatus(paymentId)
 
@@ -156,7 +159,40 @@ function PaymentSuccessContent() {
     )
   }
 
-  return <PaymentSuccess payment={payment} />
+  // Si el sync fue exitoso, mostrar el mensaje de éxito
+  // Si el status del payment es approved, mostrar el componente de éxito
+  const shouldShowSuccess = payment && payment.status === "approved" && syncSuccess
+
+  if (shouldShowSuccess) {
+    return <PaymentSuccess payment={payment} />
+  }
+
+  // Si hay un error de sync, mostrarlo
+  if (syncError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-red-600">
+            Hubo un error al sincronizar el pago. Por favor intenta nuevamente.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Mientras carga o procesa
+  return (
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex size-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+          <div className="size-6 border-4 border-blue-200 dark:border-blue-700 rounded-full border-t-transparent animate-spin" />
+        </div>
+        <p className="text-muted-foreground mt-4">
+          Procesando tu pago...
+        </p>
+      </div>
+    </div>
+  )
 }
 
 export function PaymentSuccessPageContent() {
