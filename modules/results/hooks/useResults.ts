@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getAnalysisResult as getAnalysisResultApi } from "@/modules/results/api/results"
 import type { AnalysisResult } from "../types/results"
+import type { Query } from "@tanstack/react-query"
 
 const RESULTS_KEYS = {
   all: ["results"] as const,
@@ -32,11 +33,8 @@ export function useAnalysisResult(analysisId: string | null) {
     queryKey: RESULTS_KEYS.detail(analysisId ?? ""),
     queryFn: () => getAnalysisResultApi(analysisId!),
     enabled: !!analysisId,
-    refetchInterval: (data) => {
-      // If data is undefined, we don't know the status yet, so poll
-      if (!data) return POLLING_INTERVAL
-
-      // Check if we should continue polling based on status
+    refetchInterval: (query: Query<AnalysisResult, Error, AnalysisResult, readonly ["results", "detail", string]>) => {
+      const data = query.state.data
       return shouldContinuePolling(data) ? POLLING_INTERVAL : false
     },
   })

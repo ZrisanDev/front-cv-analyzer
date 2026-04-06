@@ -6,7 +6,7 @@ export type {
 } from "./types/dashboard"
 
 // API
-export { getDashboardStats } from "./api/dashboard"
+export { getStatsSummary, getScoreEvolution, getMissingKeywords } from "./api/dashboard"
 
 // Hooks
 export { useDashboardStats } from "./hooks/useDashboard"

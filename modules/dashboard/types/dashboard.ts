@@ -41,9 +41,6 @@ export interface KeywordCount {
 export interface DashboardStats {
   totalAnalyses: number
   averageScore: number
-  completed: number
-  failed: number
-  pending: number
   evolution: EvolutionPoint[]
   topMissingKeywords: KeywordCount[]
 }

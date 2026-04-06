@@ -63,9 +63,6 @@ export function useDashboardStats() {
   const data: DashboardStats = {
     totalAnalyses: summary.data?.total_analyses ?? 0,
     averageScore: summary.data?.avg_compatibility_score ?? 0,
-    completed: summary.data?.completed ?? 0,
-    failed: summary.data?.failed ?? 0,
-    pending: summary.data?.pending ?? 0,
     evolution: transformedEvolution,
     topMissingKeywords: transformedKeywords,
   }
