@@ -6,7 +6,7 @@ import type { LucideIcon } from "lucide-react"
 import { TrendingUp, AlertTriangle, XCircle } from "lucide-react"
 
 interface CompatibilityScoreProps {
-  score: number
+  score: number | null | undefined
   className?: string
 }
 
@@ -49,6 +49,35 @@ function getScoreConfig(score: number): {
 }
 
 export function CompatibilityScore({ score, className }: CompatibilityScoreProps) {
+  // If score is null or undefined, show a placeholder
+  if (score === null || score === undefined) {
+    return (
+      <div className={cn("flex flex-col items-center gap-4 py-6", className)}>
+        <div className="relative flex items-center justify-center">
+          <svg className="size-40 -rotate-90" viewBox="0 0 160 160">
+            <circle
+              cx="80"
+              cy="80"
+              r="70"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="10"
+              className="text-muted/30"
+            />
+          </svg>
+          <div className="absolute flex flex-col items-center">
+            <span className="text-4xl font-bold tabular-nums text-muted-foreground">
+              —
+            </span>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Puntaje no disponible
+        </p>
+      </div>
+    )
+  }
+
   const config = getScoreConfig(score)
   const { Icon } = config
 

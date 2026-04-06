@@ -11,7 +11,7 @@ import { StrengthsWeaknesses } from "@/modules/results/components/StrengthsWeakn
 import { CardSkeleton } from "@/modules/shared/components/LoadingSkeleton"
 import { EmptyState } from "@/modules/shared/components/EmptyState"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, FileSearch } from "lucide-react"
+import { AlertCircle, FileSearch, Loader2 } from "lucide-react"
 import type { Keyword } from "@/modules/results/types/results"
 
 export default function ResultsPage() {
@@ -23,12 +23,12 @@ export default function ResultsPage() {
   const { data: result, isLoading, isError, error } = useAnalysisResult(analysisId)
 
   const formattedDate = useMemo(() => {
-    if (!result?.createdAt) return null
+    if (!result?.created_at) return null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const TemporalAPI = (globalThis as any).Temporal
     if (TemporalAPI?.PlainDate) {
       try {
-        const date = TemporalAPI.PlainDate.from(result.createdAt)
+        const date = TemporalAPI.PlainDate.from(result.created_at)
         return date.toLocaleString("es-AR", {
           year: "numeric",
           month: "long",
@@ -42,8 +42,8 @@ export default function ResultsPage() {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(new Date(result.createdAt))
-  }, [result?.createdAt])
+    }).format(new Date(result.created_at))
+  }, [result?.created_at])
 
   // --- States ---
 
@@ -81,6 +81,41 @@ export default function ResultsPage() {
     )
   }
 
+  // Show loading state when analysis is still pending or processing
+  if (!result.analysis_result) {
+    const isPending = result.status === "pending" || result.status === "processing"
+
+    return (
+      <div className="flex flex-col gap-8">
+        {/* Date header */}
+        {formattedDate && (
+          <p className="text-sm text-muted-foreground">{formattedDate}</p>
+        )}
+
+        {isPending ? (
+          <div className="flex flex-col items-center justify-center gap-4 py-12">
+            <Loader2 className="size-12 animate-spin text-primary" />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold">
+                {result.status === "pending" ? "Tu análisis está en cola" : "Analizando tu CV..."}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Esto puede tomar unos minutos. Por favor espera...
+              </p>
+            </div>
+          </div>
+        ) : (
+          <Alert variant="destructive">
+            <AlertCircle className="size-4" />
+            <AlertDescription>
+              {result.error_message || "No se pudo completar el análisis. Intenta nuevamente."}
+            </AlertDescription>
+          </Alert>
+        )}
+      </div>
+    )
+  }
+
   // --- Render ---
 
   return (
@@ -91,17 +126,17 @@ export default function ResultsPage() {
       )}
 
       {/* Executive Summary */}
-      <ExecutiveSummary summary={result.executiveSummary} />
+      <ExecutiveSummary summary={result.analysis_result.summary} />
 
       {/* Compatibility Score */}
-      <CompatibilityScore score={result.score} />
+      <CompatibilityScore score={result.analysis_result.compatibility} />
 
       {/* Keywords */}
       <div className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Keywords</h2>
         <KeywordsList
-          presentKeywords={result.presentKeywords}
-          missingKeywords={result.missingKeywords}
+          presentKeywords={result.analysis_result.keywords_present}
+          missingKeywords={result.analysis_result.keywords_missing}
           onSelectKeyword={setSelectedKeyword}
         />
       </div>
@@ -116,8 +151,8 @@ export default function ResultsPage() {
       <div className="flex flex-col gap-4">
         <h2 className="text-lg font-semibold">Fortalezas y Debilidades</h2>
         <StrengthsWeaknesses
-          strengths={result.strengths}
-          weaknesses={result.weaknesses}
+          strengths={result.analysis_result.strengths}
+          weaknesses={result.analysis_result.weaknesses}
         />
       </div>
     </div>

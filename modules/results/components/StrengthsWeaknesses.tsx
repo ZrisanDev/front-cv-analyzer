@@ -14,17 +14,20 @@ export function StrengthsWeaknesses({
   weaknesses,
   className,
 }: StrengthsWeaknessesProps) {
+  const strengthList = strengths ?? []
+  const weaknessList = weaknesses ?? []
+
   return (
     <div className={cn("grid gap-6 md:grid-cols-2", className)}>
       {/* Strengths */}
       <div className="flex flex-col gap-3">
         <h3 className="flex items-center gap-2 text-sm font-medium">
           <CheckCircle className="size-4 text-emerald-500" />
-          Fortalezas ({strengths.length})
+          Fortalezas ({strengthList.length})
         </h3>
-        {strengths.length > 0 ? (
+        {strengthList.length > 0 ? (
           <ul className="flex flex-col gap-2">
-            {strengths.map((strength, i) => (
+            {strengthList.map((strength, i) => (
               <li
                 key={i}
                 className="flex items-start gap-2 rounded-lg bg-emerald-500/5 p-3 text-sm"
@@ -43,11 +46,11 @@ export function StrengthsWeaknesses({
       <div className="flex flex-col gap-3">
         <h3 className="flex items-center gap-2 text-sm font-medium">
           <AlertTriangle className="size-4 text-amber-500" />
-          Debilidades ({weaknesses.length})
+          Debilidades ({weaknessList.length})
         </h3>
-        {weaknesses.length > 0 ? (
+        {weaknessList.length > 0 ? (
           <ul className="flex flex-col gap-2">
-            {weaknesses.map((weakness, i) => (
+            {weaknessList.map((weakness, i) => (
               <li
                 key={i}
                 className="flex items-start gap-2 rounded-lg bg-amber-500/5 p-3 text-sm"

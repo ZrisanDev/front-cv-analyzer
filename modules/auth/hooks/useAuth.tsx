@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -13,11 +14,15 @@ import { TOKEN_KEY } from "@/modules/shared/lib/constants"
 import { login as loginApi, register as registerApi, getMe as getMeApi } from "@/modules/auth/api/auth"
 import toast from "react-hot-toast"
 
+const REFRESH_TOKEN_KEY = 'cv_analyzer_refresh_token'
+
 interface AuthContextValue {
   user: User | null
   token: string | null
   isAuthenticated: boolean
   isLoading: boolean
+  /** Whether auth is still initializing (fetching user data from backend) */
+  isInitializing: boolean
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
@@ -34,25 +39,80 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUserState] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem(TOKEN_KEY)
-      if (stored) {
-        // Sync cookie from localStorage (e.g. after page refresh)
-        document.cookie = `${TOKEN_KEY}=${stored}; path=/; SameSite=Lax; max-age=3600`
-      }
-      return stored
+      return localStorage.getItem(TOKEN_KEY)
     }
     return null
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isInitializing, setIsInitializing] = useState(true)
+
+  // Helper function to set cookie
+  const setCookie = useCallback((name: string, value: string, days: number) => {
+    if (typeof window !== "undefined") {
+      const date = new Date()
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000))
+      const expires = `expires=${date.toUTCString()}`
+      document.cookie = `${name}=${value}; ${expires}; path=/; SameSite=Lax`
+    }
+  }, [])
+
+  // Helper function to delete cookie
+  const deleteCookie = useCallback((name: string) => {
+    if (typeof window !== "undefined") {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`
+    }
+  }, [])
+
+  // Sync cookie from localStorage on mount
+  useEffect(() => {
+    if (token) {
+      setCookie(TOKEN_KEY, token, 7)
+    }
+  }, [token, setCookie])
+
+  // Recover user from backend on mount if token exists
+  useEffect(() => {
+    const initializeAuth = async () => {
+      console.log('[Auth] Initializing...', { token: !!token, user: !!user })
+
+      if (token && !user) {
+        try {
+          console.log('[Auth] Fetching user from backend...')
+          const userData = await getMeApi()
+          console.log('[Auth] User data received:', userData)
+          setUserState(userData)
+        } catch (error) {
+          // Token invalid or expired, clear it and redirect
+          console.error("[Auth] Failed to fetch user, clearing token and redirecting:", error)
+          localStorage.removeItem(TOKEN_KEY)
+          localStorage.removeItem(REFRESH_TOKEN_KEY)
+          deleteCookie(TOKEN_KEY)
+          setToken(null)
+          // Redirect to login immediately
+          window.location.href = '/login'
+          return
+        }
+      } else {
+        console.log('[Auth] Skipping user fetch:', { hasToken: !!token, hasUser: !!user })
+      }
+
+      console.log('[Auth] Initialization complete')
+      setIsInitializing(false)
+    }
+
+    initializeAuth()
+  }, [token, user, deleteCookie])
 
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true)
     try {
       const response = await loginApi({ email, password })
       const accessToken = response.access_token
+      const refreshToken = response.refresh_token
       localStorage.setItem(TOKEN_KEY, accessToken)
-      // Also set cookie for middleware (same-site, path=/)
-      document.cookie = `${TOKEN_KEY}=${accessToken}; path=/; SameSite=Lax; max-age=3600`
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken)
+      // Set cookie for (7 days)
+      setCookie(TOKEN_KEY, accessToken, 7)
       setToken(accessToken)
       const user = await getMeApi()
       setUserState(user)
@@ -60,7 +120,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [setCookie])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
     setIsLoading(true)
@@ -76,12 +136,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
-    // Also clear cookie
-    document.cookie = `${TOKEN_KEY}=; path=/; SameSite=Lax; max-age=0`
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
+    deleteCookie(TOKEN_KEY)
     setToken(null)
     setUserState(null)
     window.location.href = "/login"
-  }, [])
+  }, [deleteCookie])
 
   const setUser = useCallback((u: User) => {
     setUserState(u)
@@ -93,12 +153,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       token,
       isAuthenticated: !!token && !!user,
       isLoading,
+      isInitializing,
       login,
       register,
       logout,
       setUser,
     }),
-    [user, token, isLoading, login, register, logout, setUser]
+    [user, token, isLoading, isInitializing, login, register, logout, setUser]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

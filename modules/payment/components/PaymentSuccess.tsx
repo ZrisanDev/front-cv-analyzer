@@ -71,7 +71,7 @@ export function PaymentSuccess({ payment }: PaymentSuccessProps) {
           )}
 
           <Button asChild className="w-full" size="lg">
-            <Link href={payment.analysisId ? `${ROUTES.RESULTS}/${payment.analysisId}` : ROUTES.RESULTS}>
+            <Link href={payment.analysisId ? `${ROUTES.RESULTS}?id=${payment.analysisId}` : ROUTES.RESULTS}>
               View Analysis Results
             </Link>
           </Button>

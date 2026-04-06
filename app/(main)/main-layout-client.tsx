@@ -9,7 +9,7 @@ export default function MainLayoutClient({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-full min-h-full">
+    <div className="flex h-full min-h-full" suppressHydrationWarning>
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />

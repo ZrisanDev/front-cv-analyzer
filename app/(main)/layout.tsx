@@ -3,11 +3,6 @@ import { redirect } from "next/navigation"
 import { TOKEN_KEY, ROUTES } from "@/modules/shared/lib/constants"
 import MainLayoutClient from "./main-layout-client"
 
-/**
- * Server Layout Guard for protected routes.
- * If user is NOT authenticated, redirect to /login.
- * If authenticated, render the client layout with sidebar/header.
- */
 export default async function MainLayout({
   children,
 }: {

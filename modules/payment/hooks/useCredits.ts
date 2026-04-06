@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { getCredits as getCreditsApi, getPackages as getPackagesApi } from "@/modules/payment/api/credits"
 import { useAuth } from "@/modules/auth/hooks/useAuth"
+import { TOKEN_KEY } from "@/modules/shared/lib/constants"
 
 const CREDIT_KEYS = {
   all: ["credits"] as const,
@@ -11,12 +12,13 @@ const CREDIT_KEYS = {
 const FIVE_MINUTES_MS = 5 * 60 * 1000
 
 export function useCreditsBalance() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, token, isInitializing } = useAuth()
 
   return useQuery({
     queryKey: CREDIT_KEYS.balance(),
     queryFn: getCreditsApi,
-    enabled: isAuthenticated,
+    // Enable query only after auth is fully initialized and we have a token or are authenticated
+    enabled: !isInitializing && (!!token || isAuthenticated),
     staleTime: FIVE_MINUTES_MS,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

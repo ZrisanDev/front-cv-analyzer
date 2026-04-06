@@ -10,11 +10,10 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, CreditCard } from "lucide-react"
+import { Loader2, FileText } from "lucide-react"
 import { CVUpload } from "@/modules/analysis/components/CVUpload"
 import { JobInput } from "@/modules/analysis/components/JobInput"
-import { PriceDisplay } from "@/modules/analysis/components/PriceDisplay"
-import { usePayment } from "@/modules/analysis/hooks/useAnalysis"
+import { useSubmitAnalysis } from "@/modules/analysis/hooks/useAnalysis"
 
 export function AnalysisForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -23,7 +22,7 @@ export function AnalysisForm() {
   const [activeTab, setActiveTab] = useState("description")
   const [validationError, setValidationError] = useState<string | null>(null)
 
-  const payment = usePayment()
+  const submitAnalysis = useSubmitAnalysis()
 
   const isFormValid = selectedFile && (jobDescription.trim() || jobUrl.trim())
   const isJobInputFilled = activeTab === "description" ? jobDescription.trim() : jobUrl.trim()
@@ -37,7 +36,7 @@ export function AnalysisForm() {
     setSelectedFile(null)
   }, [])
 
-  const handlePay = useCallback(async () => {
+  const handleSubmit = useCallback(async () => {
     if (!selectedFile) {
       setValidationError("Please upload your CV")
       return
@@ -54,12 +53,12 @@ export function AnalysisForm() {
 
     setValidationError(null)
 
-    payment.mutate({
-      cv: selectedFile,
-      jobDescription: activeTab === "description" ? jobDescription : undefined,
-      jobUrl: activeTab === "url" ? jobUrl : undefined,
+    submitAnalysis.mutate({
+      file: selectedFile,
+      job_text: activeTab === "description" ? jobDescription : null,
+      job_url: activeTab === "url" ? jobUrl : null,
     })
-  }, [selectedFile, isJobInputFilled, activeTab, jobDescription, jobUrl, payment])
+  }, [selectedFile, isJobInputFilled, activeTab, jobDescription, jobUrl, submitAnalysis])
 
   return (
     <Card>
@@ -92,22 +91,24 @@ export function AnalysisForm() {
         )}
 
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <PriceDisplay />
+          <div className="text-sm text-muted-foreground">
+            Use your credits to analyze your CV
+          </div>
 
           <Button
-            onClick={handlePay}
-            disabled={!isFormValid || payment.isPending}
+            onClick={handleSubmit}
+            disabled={!isFormValid || submitAnalysis.isPending}
             size="lg"
           >
-            {payment.isPending ? (
+            {submitAnalysis.isPending ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                Processing...
+                Analyzing...
               </>
             ) : (
               <>
-                <CreditCard className="size-4" />
-                Pay and Analyze
+                <FileText className="size-4" />
+                Analyze CV
               </>
             )}
           </Button>

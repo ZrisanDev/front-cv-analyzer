@@ -3,10 +3,17 @@ import type { ApiResponse } from "@/modules/shared/types/common"
 import type { UserCredits, CreditPackage, PaymentPreference, PackageType } from "@/modules/payment/types/payment"
 
 export async function getCredits(): Promise<UserCredits> {
-  const { data } = await api.get<ApiResponse<UserCredits>>(
+  const response = await api.get<UserCredits | ApiResponse<UserCredits>>(
     "/api/payments/my-credits"
   )
-  return data.data
+
+  // Handle both direct response and wrapped ApiResponse
+  const data = response.data
+  if (data && 'data' in data && typeof data.data === 'object') {
+    return data.data as UserCredits
+  } else {
+    return data as UserCredits
+  }
 }
 
 export async function getPackages(): Promise<CreditPackage[]> {

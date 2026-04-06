@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { initiatePayment as initiatePaymentApi, getPrice as getPriceApi } from "@/modules/analysis/api/analysis"
-import type { AnalysisPayload } from "@/modules/analysis/types/analysis"
+import { initiatePayment as initiatePaymentApi, getPrice as getPriceApi, submitAnalysis as submitAnalysisApi } from "@/modules/analysis/api/analysis"
+import type { AnalysisPayload, AnalysisSubmitPayload } from "@/modules/analysis/types/analysis"
 import toast from "react-hot-toast"
+import { ROUTES } from "@/modules/shared/lib/constants"
 
 const ANALYSIS_KEYS = {
   all: ["analysis"] as const,
@@ -35,6 +36,27 @@ export function usePayment(options?: UsePaymentOptions) {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to initiate payment. Please try again.")
+    },
+  })
+}
+
+interface UseSubmitAnalysisOptions {
+  onSuccess?: (analysisId: string) => void
+}
+
+export function useSubmitAnalysis(options?: UseSubmitAnalysisOptions) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (payload: AnalysisSubmitPayload) => submitAnalysisApi(payload),
+    onSuccess: (data) => {
+      toast.success("Analysis started successfully!")
+      options?.onSuccess?.(data.id)
+      // Redirect to results page with query parameter
+      window.location.href = `${ROUTES.RESULTS}?id=${data.id}`
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to start analysis. Please try again.")
     },
   })
 }

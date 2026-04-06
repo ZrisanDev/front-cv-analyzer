@@ -13,7 +13,7 @@ export type {
 export { getPrice, initiatePayment, submitAnalysis, getAnalysisStatus } from "./api/analysis"
 
 // Hooks
-export { usePrice, usePayment } from "./hooks/useAnalysis"
+export { usePrice, usePayment, useSubmitAnalysis } from "./hooks/useAnalysis"
 
 // Components
 export { CVUpload } from "./components/CVUpload"

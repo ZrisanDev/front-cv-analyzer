@@ -5,7 +5,7 @@ import { Suspense } from "react"
 export default function LoginPage() {
   return (
     <AuthLayout>
-      <Suspense>
+      <Suspense fallback={<div className="flex min-h-full items-center justify-center">Loading...</div>}>
         <LoginForm />
       </Suspense>
     </AuthLayout>

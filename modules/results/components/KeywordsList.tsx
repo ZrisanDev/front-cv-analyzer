@@ -16,16 +16,19 @@ export function KeywordsList({
   onSelectKeyword,
   className,
 }: KeywordsListProps) {
+  const present = presentKeywords ?? []
+  const missing = missingKeywords ?? []
+
   return (
     <div className={className}>
       {/* Present keywords */}
       <div className="mb-6">
         <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Keywords Presentes ({presentKeywords.length})
+          Keywords Presentes ({present.length})
         </h3>
-        {presentKeywords.length > 0 ? (
+        {present.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {presentKeywords.map((kw) => (
+            {present.map((kw) => (
               <Badge
                 key={kw.keyword}
                 variant="default"
@@ -43,11 +46,11 @@ export function KeywordsList({
       {/* Missing keywords */}
       <div>
         <h3 className="mb-3 text-sm font-medium text-muted-foreground">
-          Keywords Faltantes ({missingKeywords.length})
+          Keywords Faltantes ({missing.length})
         </h3>
-        {missingKeywords.length > 0 ? (
+        {missing.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {missingKeywords.map((kw) => (
+            {missing.map((kw) => (
               <Badge
                 key={kw.keyword}
                 variant="destructive"

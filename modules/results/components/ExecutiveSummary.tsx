@@ -5,11 +5,15 @@ import { MessageSquareQuote } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ExecutiveSummaryProps {
-  summary: string
+  summary: string | null | undefined
   className?: string
 }
 
 export function ExecutiveSummary({ summary, className }: ExecutiveSummaryProps) {
+  if (!summary) {
+    return null
+  }
+
   return (
     <Card className={cn("border-primary/20 bg-primary/5", className)}>
       <CardContent className="flex gap-3 pt-0">

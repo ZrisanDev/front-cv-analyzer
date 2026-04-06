@@ -1,6 +1,6 @@
 # Skill Registry
 
-**Generated**: Thu Apr 02 2026
+**Generated**: Sun Apr 05 2026
 **Source**: User-level skills (opencode, claude)
 
 ## Available Skills
@@ -29,7 +29,44 @@
 | issue-creation | ~/.config/opencode/skills/issue-creation | Issue creation workflow |
 | branch-pr | ~/.config/opencode/skills/branch-pr | PR creation workflow |
 | skill-creator | ~/.config/opencode/skills/skill-creator | Create new AI agent skills |
-| find-skills | ~/.config/opencode/skills/find-skills | Discover and install skills |
+| skill-registry | ~/.config/opencode/skills/skill-registry | Update skill registry |
+
+## Project Conventions
+
+**From**: AGENTS.md, CLAUDE.md
+
+### Next.js 16 Specific Rules
+- This is NOT the Next.js you know - APIs, conventions, and file structure differ from training data
+- Always read relevant guide in `node_modules/next/dist/docs/` before writing code
+- Heed deprecation notices
+
+### Git & Commits
+- Never add "Co-Authored-By" or AI attribution to commits
+- Use conventional commits only
+
+### Code Quality
+- Never build after changes
+- Verify technical claims before stating - if unsure, investigate first
+- Use `dejame verificar` (let me verify) before agreeing with claims
+
+### Communication Style
+- Spanish input → Rioplatense Spanish (voseo): "bien", "¿se entiende?", "es así de fácil"
+- English input → Same warm energy: "here's the thing", "it's that simple"
+- Direct but from caring - validate question, explain WHY, show correct way
+
+### Project Architecture
+- Module-based structure: modules/ {shared, landing, analysis, dashboard, history, payment}
+- Co-located: hooks, components, types, API, lib within each module
+- Path aliases: @/* → project root
+- React Server Components enabled
+- State management: @tanstack/react-query
+
+### Tech Stack
+- Framework: Next.js 16.2.2 + React 19.2.4
+- Language: TypeScript 5 (strict mode)
+- UI: shadcn/ui (radix-nova), Radix UI, Tailwind CSS 4
+- Testing: Vitest 4.1.2 + @testing-library/react
+- Linting: ESLint 9 with eslint-config-next
 
 ## Notes
 
@@ -37,3 +74,4 @@
 - Skipped: `sdd-*`, `_shared`, `skill-registry` from source scan
 - Project-level: no local skills detected in this project
 - All SDD skills available via opencode skill loader
+- SDD initialized in `engram` mode - no openspec directory, artifacts persisted to Engram
