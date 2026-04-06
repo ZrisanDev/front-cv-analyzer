@@ -8,6 +8,7 @@ import { CompatibilityScore } from "@/modules/results/components/CompatibilitySc
 import { KeywordsList } from "@/modules/results/components/KeywordsList"
 import { KeywordDetail } from "@/modules/results/components/KeywordDetail"
 import { StrengthsWeaknesses } from "@/modules/results/components/StrengthsWeaknesses"
+import { LearningPaths } from "@/modules/results/components/LearningPaths"
 import { CardSkeleton } from "@/modules/shared/components/LoadingSkeleton"
 import { EmptyState } from "@/modules/shared/components/EmptyState"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -155,6 +156,11 @@ export default function ResultsPage() {
           weaknesses={result.analysis_result.weaknesses}
         />
       </div>
+
+      {/* Learning Paths */}
+      {result.analysis_result.learning_paths && result.analysis_result.learning_paths.length > 0 && (
+        <LearningPaths learningPaths={result.analysis_result.learning_paths} />
+      )}
     </div>
   )
 }

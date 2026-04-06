@@ -13,6 +13,7 @@ export interface AnalysisContent {
   compatibility: number
   keywords_missing: Keyword[]
   keywords_present: Keyword[]
+  learning_paths: Keyword[]
 }
 
 export interface AnalysisResult {
