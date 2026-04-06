@@ -35,19 +35,6 @@ export function Header({ className }: HeaderProps) {
   const displayName = user?.name || "User"
   const initials = getUserInitials(displayName)
 
-  // Debug log
-  console.log('[Header] Debug:', {
-    isAuthenticated,
-    token: !!token,
-    tokenValue: token?.substring(0, 20),
-    user,
-    credits,
-    isInitializing,
-    'user exists': !!user,
-    'user.name': user?.name,
-    'user.email': user?.email,
-  })
-
   return (
     <header
       className={`flex h-14 shrink-0 items-center justify-end border-b bg-card px-4 md:justify-between ${className ?? ""}`}

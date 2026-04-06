@@ -11,8 +11,6 @@ interface CreditBadgeProps {
 export function CreditBadge({ freeRemaining, paidCredits }: CreditBadgeProps) {
   const total = freeRemaining + paidCredits
 
-  console.log('[CreditBadge] Props:', { freeRemaining, paidCredits, total })
-
   if (total === 0) {
     return (
       <Badge variant="secondary" className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs" data-testid="credit-badge">

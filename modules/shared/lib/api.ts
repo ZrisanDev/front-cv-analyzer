@@ -54,7 +54,6 @@ api.interceptors.response.use(
             const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY)
 
             if (refreshToken) {
-              console.log('[API] Attempting to refresh token...')
               const response = await axios.post(
                 `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`,
                 { refresh_token: refreshToken }
@@ -72,8 +71,6 @@ api.interceptors.response.use(
               date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000))
               document.cookie = `${TOKEN_KEY}=${newAccessToken}; expires=${date.toUTCString()}; path=/; SameSite=Lax`
 
-              console.log('[API] Token refreshed successfully')
-
               // Process queued requests
               failedQueue.forEach(prom => prom.resolve())
               failedQueue = []
@@ -83,7 +80,6 @@ api.interceptors.response.use(
               return api(originalRequest)
             } else {
               // No refresh token available, logout
-              console.log('[API] No refresh token available, logging out')
               throw new Error('No refresh token available')
             }
           } catch (refreshError) {
@@ -94,7 +90,6 @@ api.interceptors.response.use(
             failedQueue = []
 
             // Clear tokens and redirect to login
-            console.log('[API] Clearing tokens and redirecting to login')
             localStorage.removeItem(TOKEN_KEY)
             localStorage.removeItem(REFRESH_TOKEN_KEY)
             document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`

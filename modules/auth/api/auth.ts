@@ -42,10 +42,8 @@ export async function getMe(): Promise<User> {
   // Handle both direct response and wrapped ApiResponse
   const data = response.data;
   if (data && 'data' in data && typeof data.data === 'object') {
-    console.log('[Auth API] User data wrapped in ApiResponse:', data.data);
     return data.data as User;
   } else {
-    console.log('[Auth API] User data received directly:', data);
     return data as User;
   }
 }

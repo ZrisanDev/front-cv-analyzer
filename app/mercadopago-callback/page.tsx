@@ -19,33 +19,19 @@ function MercadoPagoCallbackContent() {
     const topic = searchParams.get("topic");
     const paymentId = searchParams.get("id");
 
-    console.log("[MercadoPagoCallback] Webhook recibido:", {
-      topic,
-      paymentId,
-    });
-
     // Solo procesar notificaciones de pago
     if (topic !== "payment") {
-      console.log(
-        "[MercadoPagoCallback] Topic no es payment, ignorando:",
-        topic,
-      );
       setIsProcessing(false);
       return;
     }
 
     if (!paymentId) {
-      console.log("[MercadoPagoCallback] No payment ID, redirigiendo a home");
       router.push("/");
       return;
     }
 
     // Redirigir a la página de pago con el ID del pago
     setTimeout(() => {
-      console.log(
-        "[MercadoPagoCallback] Redirigiendo a payment/success con paymentId:",
-        paymentId,
-      );
       router.push(`${ROUTES.PAYMENT_SUCCESS}?payment_id=${paymentId}`);
     }, 500);
   }, [searchParams, router]);

@@ -73,13 +73,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Recover user from backend on mount if token exists
   useEffect(() => {
     const initializeAuth = async () => {
-      console.log('[Auth] Initializing...', { token: !!token, user: !!user })
-
       if (token && !user) {
         try {
-          console.log('[Auth] Fetching user from backend...')
           const userData = await getMeApi()
-          console.log('[Auth] User data received:', userData)
           setUserState(userData)
         } catch (error) {
           // Token invalid or expired, clear it and redirect
@@ -92,11 +88,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
           window.location.href = '/login'
           return
         }
-      } else {
-        console.log('[Auth] Skipping user fetch:', { hasToken: !!token, hasUser: !!user })
       }
 
-      console.log('[Auth] Initialization complete')
       setIsInitializing(false)
     }
 

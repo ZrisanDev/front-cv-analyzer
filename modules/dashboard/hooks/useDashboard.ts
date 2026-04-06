@@ -33,15 +33,6 @@ export function useDashboardStats() {
     staleTime: 5 * 60 * 1000,
   })
 
-  // Debug: log data when it changes
-  useEffect(() => {
-    console.log("Dashboard - Summary data:", summary.data)
-    console.log("Dashboard - Evolution data:", evolution.data)
-    console.log("Dashboard - Keywords data:", keywords.data)
-    console.log("Dashboard - Evolution data_points:", evolution.data?.data_points)
-    console.log("Dashboard - Keywords keywords:", keywords.data?.keywords)
-  }, [summary.data, evolution.data, keywords.data])
-
   // Transform backend data to match component expectations
   const transformedEvolution: EvolutionPoint[] = (evolution.data?.data_points ?? []).map(
     (point) => ({
@@ -66,10 +57,6 @@ export function useDashboardStats() {
     evolution: transformedEvolution,
     topMissingKeywords: transformedKeywords,
   }
-
-  console.log("Dashboard - Transformed evolution:", transformedEvolution)
-  console.log("Dashboard - Transformed keywords:", transformedKeywords)
-  console.log("Dashboard - Final data:", data)
 
   return {
     data,

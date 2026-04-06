@@ -37,22 +37,9 @@ export function PricingPageWithWallet() {
   useMercadoPagoSDK(process.env.NEXT_PUBLIC_MP_PUBLIC_KEY);
 
   const handleSelect = async (packageType: PackageType) => {
-    console.log(
-      "[PricingPageWithWallet] Button clicked, packageType:",
-      packageType,
-    );
     setCreatingPreference(packageType);
     try {
-      console.log("[PricingPageWithWallet] Calling createPackagePreference...");
       const preference = await createPackagePreference(packageType);
-      console.log(
-        "[PricingPageWithWallet] Preference received:",
-        preference.preference_id,
-      );
-      console.log(
-        "[PricingPageWithWallet] Payment URL received:",
-        preference.payment_url,
-      );
 
       // Guardar el preferenceId para mostrar el Wallet Button
       setPreferences((prev) => ({
