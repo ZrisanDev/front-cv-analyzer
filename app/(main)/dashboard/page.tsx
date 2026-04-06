@@ -4,6 +4,7 @@ import { useDashboardStats } from "@/modules/dashboard/hooks/useDashboard"
 import { StatsCards } from "@/modules/dashboard/components/StatsCards"
 import { ScoreEvolutionChart } from "@/modules/dashboard/components/ScoreEvolutionChart"
 import { TopMissingKeywordsChart } from "@/modules/dashboard/components/TopMissingKeywordsChart"
+import { CreditOverviewCard } from "@/modules/payment"
 import { EmptyState } from "@/modules/shared/components/EmptyState"
 import { Skeleton } from "@/components/ui/skeleton"
 import { BarChart3 } from "lucide-react"
@@ -38,6 +39,9 @@ export default function DashboardPage() {
         averageScore={data?.averageScore ?? 0}
         isLoading={isLoading}
       />
+
+      {/* Credit Overview */}
+      <CreditOverviewCard />
 
       {/* Charts */}
       {isLoading ? (
