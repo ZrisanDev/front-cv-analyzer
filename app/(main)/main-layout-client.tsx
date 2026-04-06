@@ -32,12 +32,6 @@ export default function MainLayoutClient({
       ? credits.free_analyses_remaining + credits.paid_analyses_credits
       : 0
 
-  console.log('[MainLayoutClient] Credits:', {
-    isLoading,
-    credits,
-    creditsToDisplay,
-  })
-
   return (
     <TooltipProvider>
       <SidebarProvider>

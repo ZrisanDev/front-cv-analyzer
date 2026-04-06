@@ -58,8 +58,6 @@ export function AppSidebar({ credits, ...props }: AppSidebarProps) {
     },
   ], [planLabel])
 
-  console.log('[AppSidebar] Rendering with credits:', credits, 'planLabel:', planLabel)
-
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
