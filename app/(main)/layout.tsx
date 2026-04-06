@@ -12,9 +12,14 @@ export default async function MainLayout({
   const token = cookieStore.get(TOKEN_KEY)?.value
 
   if (!token) {
-    const url = new URL(ROUTES.LOGIN, process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000")
-    url.searchParams.set("from", "/main")
-    redirect(url.toString())
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+    if (baseUrl) {
+      const url = new URL(ROUTES.LOGIN, baseUrl)
+      url.searchParams.set("from", "/main")
+      redirect(url.toString())
+    } else {
+      redirect(`${ROUTES.LOGIN}?from=/main`)
+    }
   }
 
   return <MainLayoutClient>{children}</MainLayoutClient>

@@ -4,7 +4,7 @@ import { TOKEN_KEY } from "./constants"
 const REFRESH_TOKEN_KEY = 'cv_analyzer_refresh_token'
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000",
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
   headers: { "Content-Type": "application/json" },
 })
 
@@ -56,7 +56,7 @@ api.interceptors.response.use(
             if (refreshToken) {
               console.log('[API] Attempting to refresh token...')
               const response = await axios.post(
-                `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/auth/refresh`,
+                `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`,
                 { refresh_token: refreshToken }
               )
 
