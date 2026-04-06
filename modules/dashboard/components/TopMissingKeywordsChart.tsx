@@ -8,7 +8,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, CheckCircle2 } from "lucide-react"
 import type { KeywordCount } from "@/modules/dashboard/types/dashboard"
 
 const chartConfig = {
@@ -35,8 +35,14 @@ export function TopMissingKeywordsChart({
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-center text-sm text-muted-foreground">
-            ¡Genial! No hay keywords faltantes recurrentes
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+            <CheckCircle2 className="size-8 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">
+              ¡Genial! No hay keywords faltantes recurrentes
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              Cuando tengas análisis completados, verás las keywords que faltan aquí
+            </p>
           </div>
         ) : (
           <ChartContainer config={chartConfig}>

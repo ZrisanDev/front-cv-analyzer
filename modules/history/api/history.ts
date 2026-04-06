@@ -6,7 +6,7 @@ export async function getHistory(
   perPage = 10
 ): Promise<HistoryResponse> {
   const { data } = await api.get<HistoryResponse>(
-    `/api/analysis/history`,
+    `/api/history`,
     { params: { page, per_page: perPage } }
   )
   return data

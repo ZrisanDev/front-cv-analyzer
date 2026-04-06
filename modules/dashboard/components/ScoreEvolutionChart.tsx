@@ -20,24 +20,16 @@ const chartConfig = {
 
 function formatDate(dateStr: string): string {
   try {
-    // Use Temporal.PlainDate if available, fallback to Intl
-    if (typeof Temporal !== "undefined") {
-      const date = Temporal.PlainDate.from(dateStr.slice(0, 10))
-      return date.toLocaleString("es-AR", {
-        day: "2-digit",
-        month: "short",
-      })
-    }
+    // Format: YYYY-MM from backend
+    const [year, month] = dateStr.split("-")
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1)
+    return new Intl.DateTimeFormat("es-AR", {
+      month: "short",
+      year: "2-digit",
+    }).format(date)
   } catch {
-    // Temporal not available or parse failed, fallback below
+    return dateStr
   }
-
-  // Intl fallback
-  const date = new Date(dateStr)
-  return new Intl.DateTimeFormat("es-AR", {
-    day: "2-digit",
-    month: "short",
-  }).format(date)
 }
 
 interface ScoreEvolutionChartProps {
@@ -54,9 +46,15 @@ export function ScoreEvolutionChart({ data }: ScoreEvolutionChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {data.length < 2 ? (
-          <div className="flex items-center justify-center py-12 text-center text-sm text-muted-foreground">
-            Completa más análisis para ver tu evolución
+        {data.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+            <TrendingUp className="size-8 text-muted-foreground/50" />
+            <p className="text-sm text-muted-foreground">
+              No hay análisis completados aún
+            </p>
+            <p className="text-xs text-muted-foreground/70">
+              Cuando completes al menos un análisis, verás tu evolución aquí
+            </p>
           </div>
         ) : (
           <ChartContainer config={chartConfig}>

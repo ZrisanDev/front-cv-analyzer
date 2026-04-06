@@ -1,10 +1,21 @@
 import { api } from "@/modules/shared/lib/api"
-import type { ApiResponse } from "@/modules/shared/types/common"
-import type { DashboardStats } from "@/modules/dashboard/types/dashboard"
+import type {
+  StatsSummary,
+  ScoreEvolution,
+  MissingKeywordStats,
+} from "@/modules/dashboard/types/dashboard"
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-  const { data } = await api.get<ApiResponse<DashboardStats>>(
-    `/api/dashboard/stats`
-  )
-  return data.data
+export async function getStatsSummary(): Promise<StatsSummary> {
+  const { data } = await api.get<StatsSummary>("/api/stats/summary")
+  return data
+}
+
+export async function getScoreEvolution(): Promise<ScoreEvolution> {
+  const { data } = await api.get<ScoreEvolution>("/api/stats/evolution")
+  return data
+}
+
+export async function getMissingKeywords(): Promise<MissingKeywordStats> {
+  const { data } = await api.get<MissingKeywordStats>("/api/stats/missing-keywords")
+  return data
 }

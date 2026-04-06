@@ -37,6 +37,9 @@ export default function DashboardPage() {
       <StatsCards
         totalAnalyses={data?.totalAnalyses ?? 0}
         averageScore={data?.averageScore ?? 0}
+        completed={data?.completed ?? 0}
+        failed={data?.failed ?? 0}
+        pending={data?.pending ?? 0}
         isLoading={isLoading}
       />
 
