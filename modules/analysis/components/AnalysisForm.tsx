@@ -18,14 +18,11 @@ import { useSubmitAnalysis } from "@/modules/analysis/hooks/useAnalysis"
 export function AnalysisForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [jobDescription, setJobDescription] = useState("")
-  const [jobUrl, setJobUrl] = useState("")
-  const [activeTab, setActiveTab] = useState("description")
   const [validationError, setValidationError] = useState<string | null>(null)
 
   const submitAnalysis = useSubmitAnalysis()
 
-  const isFormValid = selectedFile && (jobDescription.trim() || jobUrl.trim())
-  const isJobInputFilled = activeTab === "description" ? jobDescription.trim() : jobUrl.trim()
+  const isFormValid = selectedFile && jobDescription.trim()
 
   const handleFileSelect = useCallback((file: File) => {
     setSelectedFile(file)
@@ -42,12 +39,8 @@ export function AnalysisForm() {
       return
     }
 
-    if (!isJobInputFilled) {
-      setValidationError(
-        activeTab === "description"
-          ? "Please enter the job description"
-          : "Please enter the job URL"
-      )
+    if (!jobDescription.trim()) {
+      setValidationError("Please enter the job description")
       return
     }
 
@@ -55,17 +48,17 @@ export function AnalysisForm() {
 
     submitAnalysis.mutate({
       file: selectedFile,
-      job_text: activeTab === "description" ? jobDescription : null,
-      job_url: activeTab === "url" ? jobUrl : null,
+      job_text: jobDescription,
+      job_url: null,
     })
-  }, [selectedFile, isJobInputFilled, activeTab, jobDescription, jobUrl, submitAnalysis])
+  }, [selectedFile, jobDescription, submitAnalysis])
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xl">New Analysis</CardTitle>
         <CardDescription>
-          Upload your CV and provide the job details to get a compatibility analysis
+          Upload your CV and provide the job description to get a compatibility analysis
         </CardDescription>
       </CardHeader>
 
@@ -77,11 +70,7 @@ export function AnalysisForm() {
 
         <JobInput
           jobDescription={jobDescription}
-          jobUrl={jobUrl}
-          activeTab={activeTab}
           onJobDescriptionChange={setJobDescription}
-          onJobUrlChange={setJobUrl}
-          onTabChange={setActiveTab}
         />
 
         {validationError && (
