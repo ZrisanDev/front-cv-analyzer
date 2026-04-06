@@ -59,7 +59,7 @@ export function MercadoPagoWallet({
           // Wallet is ready - no action needed
         }}
         onError={(error) => {
-          console.error("[MercadoPagoWallet] Wallet Brick error:", error);
+          // Error silently
         }}
       />
     </div>

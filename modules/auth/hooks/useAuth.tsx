@@ -79,7 +79,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUserState(userData)
         } catch (error) {
           // Token invalid or expired, clear it and redirect
-          console.error("[Auth] Failed to fetch user, clearing token and redirecting:", error)
           localStorage.removeItem(TOKEN_KEY)
           localStorage.removeItem(REFRESH_TOKEN_KEY)
           deleteCookie(TOKEN_KEY)

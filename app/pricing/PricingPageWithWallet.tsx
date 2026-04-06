@@ -53,7 +53,7 @@ export function PricingPageWithWallet() {
         [packageType]: preference.payment_url,
       }));
     } catch (error) {
-      console.error("[PricingPageWithWallet] Error in handleSelect:", error);
+      // Error silently
     } finally {
       setCreatingPreference(null);
     }

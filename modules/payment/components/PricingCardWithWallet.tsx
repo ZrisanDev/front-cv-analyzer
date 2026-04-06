@@ -119,9 +119,6 @@ export function PricingCardWithWallet({
                 onClick={(e) => {
                   if (!paymentUrl) {
                     e.preventDefault();
-                    console.warn(
-                      "[PricingCardWithWallet] No payment URL available",
-                    );
                   }
                 }}
               >

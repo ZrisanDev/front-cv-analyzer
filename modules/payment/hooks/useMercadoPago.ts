@@ -8,16 +8,13 @@ import { initMercadoPago } from "@mercadopago/sdk-react"
 export function useMercadoPagoSDK(publicKey?: string) {
   useEffect(() => {
     if (!publicKey) {
-      console.warn(
-        "[useMercadoPagoSDK] No public key provided. Skipping initialization."
-      )
       return
     }
 
     try {
       initMercadoPago(publicKey)
     } catch (error) {
-      console.error("[useMercadoPagoSDK] Error initializing Mercado Pago SDK:", error)
+      // Error silently
     }
   }, [publicKey])
 }

@@ -13,10 +13,6 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  useEffect(() => {
-    console.error("Unhandled error:", error)
-  }, [error])
-
   return (
     <div className="flex flex-1 items-center justify-center p-4">
       <Card className="w-full max-w-md">

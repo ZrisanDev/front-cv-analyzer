@@ -21,7 +21,6 @@ export function PricingPageContent() {
       const preference = await createPackagePreference(packageType)
       window.location.href = preference.payment_url
     } catch (error) {
-      console.error("[PricingPageContent] Error in handleSelect:", error)
       setPurchasing(null)
     }
   }

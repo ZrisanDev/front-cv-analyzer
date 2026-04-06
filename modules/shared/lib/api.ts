@@ -83,8 +83,6 @@ api.interceptors.response.use(
               throw new Error('No refresh token available')
             }
           } catch (refreshError) {
-            console.error('[API] Failed to refresh token:', refreshError)
-
             // Process queued requests with error
             failedQueue.forEach(prom => prom.reject(refreshError))
             failedQueue = []
